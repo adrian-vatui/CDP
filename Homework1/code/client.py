@@ -34,12 +34,14 @@ def tcp_client(args, data_to_send):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
 
+        # send data in chunks of `args.buffer_size` length
         for i in range(0, len(data_to_send), args.buffer_size):
             s.sendall(data_to_send[i:i + args.buffer_size])
             data_sent += len(data_to_send[i:i+args.buffer_size])
             messages_sent += 1
 
             if args.mode == "ACK":
+                # get ACK message from server
                 ack = s.recv(3)
 
                 if ack != b'ACK':
@@ -51,12 +53,14 @@ def udp_client(args, data_to_send):
     data_sent, messages_sent = (0, 0)
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        # send data in chunks of `args.buffer_size` length
         for i in range(0, len(data_to_send), args.buffer_size):
             s.sendto(data_to_send[i:i + args.buffer_size], (HOST, PORT))
             data_sent += len(data_to_send[i:i+args.buffer_size])
             messages_sent += 1
 
             if args.mode == "ACK":
+                # get ACK message from server
                 ack = s.recv(3)
 
                 if ack != b'ACK':
