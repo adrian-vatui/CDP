@@ -3,7 +3,7 @@
 import socket
 import argparse
 
-HOST = "127.0.0.1"
+HOST = "0.0.0.0"
 PORT = 9091
 
 
@@ -44,7 +44,10 @@ def tcp_server(args):
                 messages += 1
 
                 if args.mode == "ACK":
-                    conn.sendall(b"ACK")
+                    try:
+                        conn.sendall(b"ACK")
+                    except ConnectionResetError:
+                        pass  # client probably shut down already
 
             print(f"Done with request from {address[0]}:{address[1]}")
             print(f"Received {messages} messages and {len(all_data)} bytes")
@@ -71,7 +74,10 @@ def udp_server(args):
             messages += 1
 
             if args.mode == "ACK":
-                s.sendto(b"ACK", address)
+                try:
+                    s.sendto(b"ACK", address)
+                except ConnectionResetError:
+                    pass  # client probably shut down already
 
         print(f"Done with request from {address[0]}:{address[1]}")
         print(f"Received {messages} messages and {len(all_data)} bytes")

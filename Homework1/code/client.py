@@ -37,15 +37,19 @@ def tcp_client(args, data_to_send):
         # send data in chunks of `args.buffer_size` length
         for i in range(0, len(data_to_send), args.buffer_size):
             s.sendall(data_to_send[i:i + args.buffer_size])
-            data_sent += len(data_to_send[i:i+args.buffer_size])
+            data_sent += len(data_to_send[i:i + args.buffer_size])
             messages_sent += 1
 
             if args.mode == "ACK":
                 # get ACK message from server
-                ack = s.recv(3)
+                try:
+                    ack = s.recv(3)
 
-                if ack != b'ACK':
-                    raise Exception(f"Unexpected ACK message! Got {ack}")
+                    if ack != b'ACK':
+                        raise Exception(f"Unexpected ACK message! Got {ack}")
+                except socket.timeout:
+                    print("ACK timeout out, continuing anyway...")
+
     print(f"Sent {messages_sent} messages and {data_sent} bytes")
 
 
@@ -56,15 +60,20 @@ def udp_client(args, data_to_send):
         # send data in chunks of `args.buffer_size` length
         for i in range(0, len(data_to_send), args.buffer_size):
             s.sendto(data_to_send[i:i + args.buffer_size], (HOST, PORT))
-            data_sent += len(data_to_send[i:i+args.buffer_size])
+            data_sent += len(data_to_send[i:i + args.buffer_size])
             messages_sent += 1
 
             if args.mode == "ACK":
                 # get ACK message from server
-                ack = s.recv(3)
+                try:
+                    s.settimeout(5)
+                    ack = s.recv(3)
 
-                if ack != b'ACK':
-                    raise Exception(f"Unexpected ACK message! Got {ack}")
+                    if ack != b'ACK':
+                        raise Exception(f"Unexpected ACK message! Got {ack}")
+                except socket.timeout:
+                    print("ACK timeout out, continuing anyway...")
+
     print(f"Sent {messages_sent} messages and {data_sent} bytes")
 
 
